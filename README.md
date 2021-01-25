@@ -1,4 +1,4 @@
-# Octolitter: Spin up a litter of Self-Hosted Github Runners 🐱 #
+# Octolitter: Spin up a litter of Github Runners 🐱 #
 Octolitter is a cli tool for creating and removing short lived Github Runners.
 The long term goal is to create tool that can spin up / down Runners in a HPC
 environment (ie. SLURM) on demand.
@@ -25,7 +25,7 @@ octolitter rm --api $GITHUB_API --all
 ```
 
 > By default octolitter will pull your api key from the GITHUB_API environmental
-> variable. But you can override that/ provide via the --api flag as well
+> variable. But you can override/provide it via the --api flag as well.
 
 
 # Contributing #
