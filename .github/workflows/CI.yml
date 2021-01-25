@@ -37,7 +37,7 @@ jobs:
       run: |
         pytest --cov=octolitter tests/
       env:
-        GITHUB_API: ${{ secrets.GITHUB_TOKEN }}
+        GITHUB_API: ${{ secrets.GH_API_TESTING }}
 
     - name: Submit Matrix Coverage to Coveralls
       uses: coverallsapp/github-action@master
