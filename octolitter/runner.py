@@ -3,7 +3,6 @@ import shutil
 import platform
 import requests
 import logging
-import tarfile
 import json
 from pathlib import Path
 from uuid import uuid4
@@ -63,8 +62,7 @@ class Runner:
         if not self.path.is_dir():
             github_runner = self.get_runner_app()
             self.path.parent.mkdir(exist_ok=True, parents=True)
-            with tarfile.open(github_runner) as fid:
-                fid.extractall(self.path)
+            shutil.unpack_archive(github_runner, self.path)
 
     @property
     def path(self) -> Path:
