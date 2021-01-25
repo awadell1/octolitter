@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 import logging
 import argparse
+from sys import argv
 from pathlib import Path
 from os import getenv
 from ghapi.core import GhApi
 
-from octolitter.repo import GithubRepo
-from octolitter.runner import Runner
+from .repo import GithubRepo
+from .runner import Runner
 
 
 def cli_add_runners(args):
@@ -27,7 +28,6 @@ def cli_add_runners(args):
 
 def cli_remove_runners(args):
     # Authenticate
-    print(args.api)
     github = GhApi(token=args.api)
 
     if args.all is True:
@@ -53,9 +53,14 @@ def __cli_default(p: argparse.ArgumentParser):
         help="Be more verbose. Stacks up to 3",
     )
 
+    p.set_defaults(func=lambda x: p.print_usage())
 
-def cli():
-    parser = argparse.ArgumentParser()
+
+def cli(cli_args=argv[1:]):
+    parser = argparse.ArgumentParser(
+        prog="octolitter",
+        description="Quickly spin up a litter of Github Runners",
+    )
     __cli_default(parser)
     subp = parser.add_subparsers(help="SubCommands")
 
@@ -71,7 +76,7 @@ def cli():
     # Remove Runners
     remove = subp.add_parser("rm")
     __cli_default(remove)
-    target = remove.add_mutually_exclusive_group()
+    target = remove.add_mutually_exclusive_group(required=True)
     target.add_argument(
         "--all", help="Remove all runners", action="store_true", default=False
     )
@@ -80,7 +85,8 @@ def cli():
     )
     remove.set_defaults(func=cli_remove_runners)
 
-    args = parser.parse_args()
+    parser.set_defaults(func=lambda x: parser.print_usage())
+    args = parser.parse_args(cli_args)
 
     # Set logging level
     logLevel = min(logging.ERROR - 10 * args.verbose, logging.DEBUG)

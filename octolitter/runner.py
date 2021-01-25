@@ -106,7 +106,7 @@ class Runner:
             [Path(self.path, "run.sh")], stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
 
-    def __get_runner_app(self):
+    def get_runner_app(self):
         """Downloads the runner application for the current platform
         runner_bins - output of one of the following
             - list_runner_applications_for_repo
@@ -117,10 +117,11 @@ class Runner:
         runner_bins = self.benefactor.list_runner_applications()
 
         # Remap to Github Codes
-        os_map = {"Darwin": "osx", "Windows": "win"}
+        os_map = {"darwin": "osx", "windows": "win"}
         os = os_map[os] if os in os_map else os
         arch_map = {"x86_64": "x64"}
         arch = arch_map[arch] if arch in arch_map else arch
+        is_m1 = os == "osx" and arch == "arm64"
 
         # Get installer info
         runner = None
@@ -128,6 +129,10 @@ class Runner:
             if r.os == os and r.architecture == arch:
                 runner = r
                 break
+
+            # Allow Rossetta Fall back iff alternate is not available
+            if is_m1 and r.os == os and r.architecture == "x64" and runner is None:
+                runner = r
 
         if runner is None:
             raise RuntimeError(f"No Gitlab Runner for os: {os}, arch: {arch}")

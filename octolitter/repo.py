@@ -1,3 +1,4 @@
+from io import StringIO
 import logging
 import re
 from ghapi.core import GhApi
@@ -6,7 +7,10 @@ from ghapi.core import GhApi
 class GithubRepo:
     def __init__(self, api: GhApi, url) -> None:
         # Maintain link back to ghapi
-        self.api = api
+        if isinstance(api, str):
+            self.api = GhApi(token=api)
+        else:
+            self.api = api
 
         # Parse info from URL
         m = re.match(r".*?github.com/([^/]*)/([^/]*)", url)
