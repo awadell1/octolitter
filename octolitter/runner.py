@@ -62,7 +62,7 @@ class Runner:
         if not self.path.is_dir():
             github_runner = self.get_runner_app()
             self.path.parent.mkdir(exist_ok=True, parents=True)
-            shutil.unpack_archive(github_runner, self.path)
+            shutil.unpack_archive(str(github_runner.absolute()), str(self.path.absolute()))
 
     @property
     def path(self) -> Path:
