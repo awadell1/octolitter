@@ -88,14 +88,14 @@ class Runner:
     def kill(self):
         """ Stop Runner and deregister """
         logging.info("Killing %s", self)
+        if self.proc is not None:
+            self.proc.terminate()
+
         if self.benefactor is not None:
             token = self.benefactor.get_runner_remove_token().token
             subprocess.run(
                 [self.get_exec("config"), "remove", "--token", token], check=True
             )
-
-        if self.proc is not None:
-            self.proc.terminate()
 
         shutil.rmtree(self.path, ignore_errors=True)
 
