@@ -74,7 +74,7 @@ class Runner:
         logging.info("Registering %s", self)
         token = self.benefactor.get_runner_registration_token().token
         cmd = [
-            Path(self.path, "config.sh"),
+            str(Path(self.path, "config.sh").absolute()),
             "--url",
             self.benefactor.url(),
             "--token",
@@ -90,8 +90,8 @@ class Runner:
         logging.info("Killing %s", self)
         if self.benefactor is not None:
             token = self.benefactor.get_runner_remove_token().token
-            cmd = [Path(self.path, "config.sh"), "remove", "--token", token]
-            subprocess.run(cmd, check=True)
+            exec = str(Path(self.path, "config.sh").absolute())
+            subprocess.run([exec, "remove", "--token", token], check=True)
 
         if self.proc is not None:
             self.proc.terminate()
@@ -101,7 +101,9 @@ class Runner:
     def start(self):
         # Start the runner
         self.proc = subprocess.Popen(
-            [Path(self.path, "run.sh")], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            [str(Path(self.path, "run.sh").absolute())],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
         )
 
     def get_runner_app(self):
