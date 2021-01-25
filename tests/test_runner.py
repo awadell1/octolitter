@@ -14,3 +14,12 @@ def test_install():
     assert Path(runner_exe).exists()
     assert is_tarfile(runner_exe)
 
+    # Test installing the runner
+    assert runner.path.exists() == False
+    runner.install()
+    assert runner.path.exists()
+    assert runner.path.is_dir()
+
+    # Test killing the runner
+    runner.kill()
+    assert runner.path.exists() == False

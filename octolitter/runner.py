@@ -61,7 +61,7 @@ class Runner:
 
     def install(self):
         if not self.path.is_dir():
-            github_runner = self.__get_runner_app()
+            github_runner = self.get_runner_app()
             self.path.parent.mkdir(exist_ok=True, parents=True)
             with tarfile.open(github_runner) as fid:
                 fid.extractall(self.path)
