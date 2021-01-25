@@ -1,4 +1,8 @@
 # Octolitter: Spin up a litter of Github Runners 🐱 #
+
+![CI](https://github.com/awadell1/octolitter/workflows/CI/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/awadell1/octolitter/badge.svg)](https://coveralls.io/github/awadell1/octolitter)
+
 Octolitter is a cli tool for creating and removing short lived Github Runners.
 The long term goal is to create tool that can spin up / down Runners in a HPC
 environment (ie. SLURM) on demand.
