@@ -1,6 +1,7 @@
 from os import environ
 from pathlib import Path
 from tarfile import is_tarfile
+from zipfile import is_zipfile
 from octolitter.repo import GithubRepo
 from octolitter.runner import Runner
 
@@ -12,7 +13,6 @@ def test_install():
     runner = Runner(repo)
     runner_exe = runner.get_runner_app()
     assert Path(runner_exe).exists()
-    assert is_tarfile(runner_exe)
 
     # Test installing the runner
     assert runner.path.exists() == False

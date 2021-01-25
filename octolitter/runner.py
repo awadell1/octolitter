@@ -3,8 +3,8 @@ import shutil
 import platform
 import requests
 import logging
-import tarfile
 import json
+from time import sleep
 from pathlib import Path
 from uuid import uuid4
 from typing import Optional, List
@@ -63,8 +63,7 @@ class Runner:
         if not self.path.is_dir():
             github_runner = self.get_runner_app()
             self.path.parent.mkdir(exist_ok=True, parents=True)
-            with tarfile.open(github_runner) as fid:
-                fid.extractall(self.path)
+            shutil.unpack_archive(str(github_runner.absolute()), str(self.path.absolute()))
 
     @property
     def path(self) -> Path:
@@ -76,7 +75,7 @@ class Runner:
         logging.info("Registering %s", self)
         token = self.benefactor.get_runner_registration_token().token
         cmd = [
-            Path(self.path, "config.sh"),
+            self.get_exec("config"),
             "--url",
             self.benefactor.url(),
             "--token",
@@ -91,20 +90,44 @@ class Runner:
         """ Stop Runner and deregister """
         logging.info("Killing %s", self)
         if self.benefactor is not None:
-            token = self.benefactor.get_runner_remove_token().token
-            cmd = [Path(self.path, "config.sh"), "remove", "--token", token]
-            subprocess.run(cmd, check=True)
+            attempts = 0
+            done = False
+            while not done and attempts <= 10:
+                try:
+                    self.__deregister()
+                    done = True
+                except:
+                    attempts += 1
+                    logging.error(f"Failed to deregister {self} trying again in {attempts}s")
+                    sleep(attempts)
 
         if self.proc is not None:
             self.proc.terminate()
 
-        shutil.rmtree(self.path)
+        shutil.rmtree(self.path, ignore_errors=True)
+
+    def __deregister(self):
+        token = self.benefactor.get_runner_remove_token().token
+        subprocess.run(
+            [self.get_exec("config"), "remove", "--token", token], check=True
+        )
 
     def start(self):
         # Start the runner
         self.proc = subprocess.Popen(
-            [Path(self.path, "run.sh")], stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            self.get_exec("run"), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         )
+
+    def get_exec(self, name):
+        """ Returns the path for the given executable on the system
+        """
+        if platform.system().lower() == "windows":
+            suffix = ".cmd"
+        else:
+            suffix = ".sh"
+
+        path = Path(self.path, name).with_suffix(suffix).absolute()
+        return str(path)
 
     def get_runner_app(self):
         """Downloads the runner application for the current platform
@@ -119,7 +142,7 @@ class Runner:
         # Remap to Github Codes
         os_map = {"darwin": "osx", "windows": "win"}
         os = os_map[os] if os in os_map else os
-        arch_map = {"x86_64": "x64"}
+        arch_map = {"x86_64": "x64", "amd64": "x64"}
         arch = arch_map[arch] if arch in arch_map else arch
         is_m1 = os == "osx" and arch == "arm64"
 
