@@ -119,7 +119,7 @@ class Runner:
         # Remap to Github Codes
         os_map = {"darwin": "osx", "windows": "win"}
         os = os_map[os] if os in os_map else os
-        arch_map = {"x86_64": "x64"}
+        arch_map = {"x86_64": "x64", "amd64": "x64"}
         arch = arch_map[arch] if arch in arch_map else arch
         is_m1 = os == "osx" and arch == "arm64"
 
