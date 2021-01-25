@@ -74,7 +74,7 @@ class Runner:
         logging.info("Registering %s", self)
         token = self.benefactor.get_runner_registration_token().token
         cmd = [
-            str(Path(self.path, "config.sh").absolute()),
+            self.get_exec("config"),
             "--url",
             self.benefactor.url(),
             "--token",
@@ -90,21 +90,31 @@ class Runner:
         logging.info("Killing %s", self)
         if self.benefactor is not None:
             token = self.benefactor.get_runner_remove_token().token
-            exec = str(Path(self.path, "config.sh").absolute())
-            subprocess.run([exec, "remove", "--token", token], check=True)
+            subprocess.run(
+                [self.get_exec("config"), "remove", "--token", token], check=True
+            )
 
         if self.proc is not None:
             self.proc.terminate()
 
-        shutil.rmtree(self.path)
+        shutil.rmtree(self.path, ignore_errors=True)
 
     def start(self):
         # Start the runner
         self.proc = subprocess.Popen(
-            [str(Path(self.path, "run.sh").absolute())],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            self.get_exec("run"), stdout=subprocess.PIPE, stderr=subprocess.PIPE,
         )
+
+    def get_exec(self, name):
+        """ Returns the path for the given executable on the system
+        """
+        if platform.system().lower() == "windows":
+            suffix = ".cmd"
+        else:
+            suffix = ".sh"
+
+        path = Path(self.path, name).with_suffix(suffix).absolute()
+        return str(path)
 
     def get_runner_app(self):
         """Downloads the runner application for the current platform

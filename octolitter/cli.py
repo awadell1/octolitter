@@ -32,8 +32,6 @@ def cli_remove_runners(args):
 
     if args.all is True:
         for runner in Runner.discover(github):
-            logging.info(github.actions.create_remove_token_for_repo("awadell1", "CellFit-BatteryArchive"))
-            logging.info(runner.benefactor.api.actions.create_remove_token_for_repo("awadell1", "CellFit-BatteryArchive"))
             runner.kill()
     else:
         Runner.from_name(github, args.runner).kill()
