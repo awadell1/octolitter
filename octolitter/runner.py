@@ -4,6 +4,7 @@ import platform
 import requests
 import logging
 import json
+from time import sleep
 from pathlib import Path
 from uuid import uuid4
 from typing import Optional, List
@@ -88,16 +89,28 @@ class Runner:
     def kill(self):
         """ Stop Runner and deregister """
         logging.info("Killing %s", self)
+        if self.benefactor is not None:
+            attempts = 0
+            done = False
+            while not done and attempts <= 10:
+                try:
+                    self.__deregister()
+                    done = True
+                except:
+                    attempts += 1
+                    logging.error(f"Failed to deregister {self} trying again in {attempts}s")
+                    sleep(attempts)
+
         if self.proc is not None:
             self.proc.terminate()
 
-        if self.benefactor is not None:
-            token = self.benefactor.get_runner_remove_token().token
-            subprocess.run(
-                [self.get_exec("config"), "remove", "--token", token], check=True
-            )
-
         shutil.rmtree(self.path, ignore_errors=True)
+
+    def __deregister(self):
+        token = self.benefactor.get_runner_remove_token().token
+        subprocess.run(
+            [self.get_exec("config"), "remove", "--token", token], check=True
+        )
 
     def start(self):
         # Start the runner
